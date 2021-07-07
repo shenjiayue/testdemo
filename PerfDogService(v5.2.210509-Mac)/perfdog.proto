@@ -1,0 +1,753 @@
+syntax = "proto3";
+
+package com.perfdog.proto;
+option java_multiple_files = true;
+
+message OptionalInt {
+    int32 value = 1;
+}
+
+message OptionalFloat {
+    float value = 1;
+}
+
+message OptionalDouble {
+    double value = 1;
+}
+
+message Empty {
+}
+
+message Token {
+    string token = 1;
+}
+
+message UserInfo {
+    string name = 1; // 名字
+    string pic = 2; // 头像url
+    string email = 3; // 邮箱
+    string id = 4; // 用户id
+}
+
+enum DEVICE_EVENTTYPE {
+    ADD = 0; // 添加设备
+    REMOVE = 1; // 移除设备
+}
+
+enum DEVICE_OSTYPE {
+    ANDROID = 0; // Android设备
+    IOS = 1; // iOS设备
+}
+
+enum DEVICE_CONTYPE {
+    USB = 0; // usb连接
+    WIFI = 1; // wifi连接
+}
+
+message Device {
+    DEVICE_OSTYPE osType = 1; // 设备系统类型
+    DEVICE_CONTYPE conType = 2; // 设备连接类型
+    string uid = 3; // 设备uid
+    string name = 4; //设备名字
+}
+
+message DeviceEvent {
+    DEVICE_EVENTTYPE eventType = 1; // 事件类型
+    Device device = 2; // 设备标识
+}
+
+message DeviceInfo {
+    map<string, string> value = 1; // 设备信息map
+}
+
+message DeviceStatus {
+    bool isValid = 1; //false的时候设备需要初始化
+    bool isTesting = 2; //是否在测试中
+    bool isPerfDogAppInstalled = 3; //android上PerfDog App是否安装成功
+}
+
+message AppInfo {
+    string label = 1; // APP名称
+    string packageName = 2; // APP包名
+    string version = 3; // APP Version
+    repeated string processList = 4; // APP进程列表
+    bytes icon = 5; // APP Icon, PNG格式
+    bool isSystemApp = 6; // 是否系统应用
+    string subVersion = 7; // APP子版本号,android上为versionCode,ios上为CFBundleVersion(XCode里的build)
+}
+
+message AppList {
+    repeated AppInfo app = 1; // APP列表
+}
+
+enum PerfDataType {
+    DATAID_NONE = 0;
+    CPU_USAGE = 1;
+    GPU_USAGE = 2;
+    GPU_FREQ = 3;
+    FPS = 4;
+    NETWORK_USAGE = 5;
+    ANDROID_MEMORY_DETAIL = 6;
+    MEMORY = 7;
+    BATTERY = 8;
+    CPU_TEMPERATURE = 9;
+    FRAME_TIME = 10;
+    CTX_SWITCH = 11;
+    WAKEUP = 12;
+    SCREEN_SHOT = 13;
+    SYSTEM_LOG = 14;
+    CORE_FREQUENCY = 15;
+    CORE_USAGE = 16;
+    IOS_GPU_USAGE = 17;
+    IOS_ENERGY_USAGE = 18;
+    BATTERY_TEMPERATURE = 19;
+    NORMALIZED_CPU_USAGE = 20;
+    NORMALIZED_CPU_CORE_USAGE = 21;
+    GPU_COUNTER_UTILIZATION = 22;
+    GPU_COUNTER_MEMORY_ACCESS = 23;
+    GPU_COUNTER_PIXELS_INFO = 24;
+}
+
+message EnablePerfDataTypeReq {
+    Device device = 1;
+    PerfDataType type = 2;
+}
+
+message DisablePerfDataTypeReq {
+    Device device = 1;
+    PerfDataType type = 2;
+}
+
+message PerfDataTypeRet {
+    repeated PerfDataType type = 1;
+}
+
+message ScreenShotInterval {
+    Device device = 1;
+    int32 second = 2;
+}
+
+message StartTestAppReq {
+    Device device = 1;
+    AppInfo app = 2; // 需要测试的APP
+    string subProcess = 3; // 需要测试的子进程(只适用于Android, iOS无需填写)
+    bool hideFloatingWindow = 4; // 手机上是否不显示悬浮窗(只适用于Android, iOS无需填写)
+    string subWindow = 5; // 指定测试fps的窗口名字
+}
+
+message StartTestSysProcessReq {
+    Device device = 1;
+    SysProcessInfo sysProcessInfo = 2;
+    bool hideFloatingWindow = 3; // 手机上是否不显示悬浮窗(只适用于Android, iOS无需填写)
+}
+
+message StartTestRet {
+    int32 ret = 1;
+}
+
+message OpenPerfDataStreamReq {
+    Device device = 1;
+}
+
+message StopTestReq {
+    Device device = 1;
+}
+
+message FrameTime {
+    int64 time = 1;
+    int64 absTime = 2;
+    double frameTime = 3;
+    bool isInterFrame = 4;
+}
+
+message FpsData {
+    int64 time = 1;
+    int64 absTime = 2;
+    double fps = 3;
+    string label = 4;
+    string note = 5;
+    OptionalDouble InterFrame = 6; // 只有android手机有
+}
+
+message FrameTimeData {
+    repeated FrameTime frameTime = 1;
+}
+
+message JankData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 jank = 3;
+    int32 bigJank = 4;
+    double stutter = 5;
+}
+
+message AndroidGpuUsageData {
+    int64 time = 1;
+    int64 absTime = 2;
+    double gpuUsage = 3;
+}
+
+message IosGpuUsageData {
+    int64 time = 1;
+    int64 absTime = 2;
+    float renderUsage = 3;
+    float tilerUsage = 4;
+    float deviceUsage = 5;
+}
+
+message GpuFreqData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 gpuFreq = 3;
+}
+
+message AndroidMemData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 pss = 3;
+    int32 swap = 4;
+    int32 virtualMemory = 5;
+    int32 availableMemory = 6;
+}
+
+message AndroidMemDetailData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 nativePss = 3;
+    int32 gfx = 4;
+    int32 gl = 5;
+    int32 unknown = 6;
+    int32 javaHeap = 7;
+}
+
+message Ios10MemData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 realMemory = 3;
+    int32 virtualMemory = 4;
+    int32 availableMemory = 5;
+}
+
+message Ios11MemData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 xcodeMemory = 3;
+    int32 realMemory = 4;
+    int32 memory = 5;
+    int32 virtualMemory = 6;
+    int32 availableMemory = 7;
+}
+
+message CoreUsageData {
+    int64 time = 1;
+    int64 absTime = 2;
+    repeated float coreUsage = 3;
+}
+
+message CpuFreqData {
+    int64 time = 1;
+    int64 absTime = 2;
+    repeated int32 cpuFreq = 3;
+}
+
+message CpuUsageData {
+    int64 time = 1;
+    int64 absTime = 2;
+    double appUsage = 3;
+    double totalUsage = 4;
+}
+
+message CpuTempData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 temp = 3;
+}
+
+message BatteryTempData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 temp = 3;
+}
+
+message CtxSwitchData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int64 ctxSwitch = 3;
+}
+
+message WakeupsData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int64 wakeups = 3;
+}
+
+message BatteryData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 current = 3;
+    int32 voltage = 4;
+    int32 power = 5;
+}
+
+message NetworkData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 upload = 3;
+    int32 download = 4;
+}
+
+message SyslogData {
+    string log = 1;
+}
+
+message ScreenShotData {
+    int64 time = 1;
+    int64 absTime = 2;
+    bytes data = 3;
+}
+
+message WarningData {
+    string msg = 1;
+}
+
+message ErrorData {
+    string msg = 1;
+}
+
+message GpuCounterUtilization {
+    int64 time = 1;
+    int64 absTime = 2;
+    OptionalFloat nonFragmentUtilization = 3;
+    OptionalFloat fragmentUtilization = 4;
+}
+
+message GpuCounterPixelsInfo {
+    int64 time = 1;
+    int64 absTime = 2;
+    OptionalFloat overDraw = 3;
+    OptionalFloat pixelThroughput = 4;
+}
+
+message GpuCounterMemoryAccess {
+    int64 time = 1;
+    int64 absTime = 2;
+    OptionalInt l2LoadStoreRead = 3;
+    OptionalInt l2TextureRead = 4;
+    OptionalInt busRead = 5;
+    OptionalInt busWrite = 6;
+}
+
+message AndroidPerfData {
+    oneof value {
+        FpsData fpsData = 1;
+        FrameTimeData frameTimeData = 2;
+        JankData jankData = 3;
+        AndroidGpuUsageData androidGpuUsageData = 4;
+        GpuFreqData gpuFreqData = 5;
+        AndroidMemData androidMemData = 6;
+        AndroidMemDetailData androidMemDetailData = 7;
+        CoreUsageData coreUsageData = 8;
+        CpuFreqData cpuFreqData = 9;
+        CpuUsageData cpuUsageData = 10;
+        CpuTempData cpuTempData = 11;
+        BatteryData batteryData = 12;
+        NetworkData networkData = 13;
+        SyslogData syslogData = 14;
+        ScreenShotData screenShotData = 15;
+        CpuUsageData normalizedCpuUsageData = 16;
+        CoreUsageData normalizedCpuCoreUsageData = 17;
+        GpuCounterUtilization gpuCounterUtilization = 18;
+        GpuCounterPixelsInfo gpuCounterPixelsInfo = 19;
+        GpuCounterMemoryAccess gpuCounterMemoryAccess = 20;
+    }
+}
+
+message IosPerfData {
+    oneof value {
+        FpsData fpsData = 1;
+        FrameTimeData frameTimeData = 2;
+        JankData jankData = 3;
+        IosGpuUsageData iosGpuUsageData = 4;
+        Ios10MemData ios10MemData = 5;
+        Ios11MemData ios11MemData = 6;
+        CpuUsageData cpuUsageData = 7;
+        CtxSwitchData ctxSwitchData = 8;
+        WakeupsData wakeupsData = 9;
+        BatteryData batteryData = 10;
+        NetworkData networkData = 11;
+        SyslogData syslogData = 12;
+        ScreenShotData screenShotData = 13;
+        IosEnergyUsageData iosEnergyUsageData = 14;
+        BatteryTempData batteryTempData = 15;
+    }
+}
+
+// 性能数据
+message PerfData {
+    oneof value {
+        WarningData warningData = 1;
+        ErrorData errorData = 2;
+        AndroidPerfData androidPerfData = 3;
+        IosPerfData iosPerfData = 4;
+        StartTestRet startTestRet = 5; //成功开始返回0
+    }
+}
+
+// 缓存性能数据
+message CachePerfData {
+    oneof value {
+        AppInfo appInfo = 1;
+        AndroidPerfData AndroidPerfData = 2;
+        IosPerfData IosPerfData = 3;
+        DeviceInfo DeviceInfo = 4;
+    }
+}
+
+message ScreenshotFile {
+    string fileName = 1; // 截图文件的名字,与json和protobuf中的截图名字对应
+    bytes fileContent = 2; // 截图文件的内容
+}
+
+message CachePerfDataPacked {
+    oneof value {
+        bytes perfData = 1; // json或protobuf格式的性能数据,返回一次
+        bytes icon = 2; // APP Icon, PNG格式
+        ScreenshotFile screenshotFile = 3; // jpg格式的截屏文件,返回多次
+    }
+}
+
+message SetLabelReq {
+    Device device = 1;
+    string label = 2;
+}
+
+message SetLabelRet {
+    int64 time = 1; // 设置的label的起始时间,可用于修改label
+}
+
+message UpdateLabelReq {
+    Device device = 1;
+    int64 time = 2; // label的起始时间
+    string label = 3; // 新的label
+}
+
+message AddNoteReq {
+    Device device = 1;
+    int64 time = 2; // 添加note的时间，此时间必须是有对应的性能指标，否则添加无效
+    string note = 3;
+}
+
+message RemoveNoteReq {
+    Device device = 1;
+    int64 time = 2;
+}
+
+enum DataExportFormat {
+    EXPORT_TO_EXCEL = 0;
+    EXPORT_TO_JSON = 1;
+    EXPORT_TO_PROTOBUF = 2;
+}
+
+enum DataInterchangeFormat {
+    JSON = 0;
+    PROTOBUF = 1;
+}
+
+message SetDataUploadServerReq {
+    string serverUrl = 1; // 数据上传服务器的地址
+    DataInterchangeFormat dataUploadFormat = 2; //上传到服务器的数据格式
+}
+
+message SetDataUploadServerRsp {
+}
+
+message SaveDataReq {
+    Device device = 1; // 设备标识
+    int64 beginTime = 2; // 开始时间, 毫秒
+    int64 endTime = 3; // 结束时间, 毫秒
+    string caseName = 4; // case名字
+    bool uploadToServer = 5; // 上传云平台(默认上传到PerfDog云平台,可通过setGlobalDataUploadServer接口自定义)
+    bool exportToFile = 6; // 保存到文件,输出目录为outputDirectory
+    string outputDirectory = 7; // 文件输出路径
+    DataExportFormat dataExportFormat = 8; // 文件保存格式
+}
+
+message UploadToServerResult {
+    bool success = 1; // upload是否成功
+    string caseId = 2; // 上传数据成功后的case id
+}
+
+message ExportToFileResult {
+    bool success = 1; // 导出Excel文件是否成功
+    string filePath = 2; // 保存成功后的文件路径
+}
+
+message SaveDataRsp {
+    UploadToServerResult uploadResult = 1;
+    ExportToFileResult exportResult = 2;
+}
+
+message GetAppRunningProcessReq {
+    Device device = 1; // 设备标识
+    AppInfo app = 2; // 需要查询的app
+}
+
+message GetAppWindowsMapReq {
+    Device device = 1; // 设备标识
+    AppInfo app = 2; // 需要查询的app
+}
+
+message ProcessInfo {
+    string name = 1; //进程的名字
+    bool isTop = 2; //进程是否在前台
+    int32 pid = 3; //进程id,仅在android上返回
+}
+
+message GetAppRunningProcessRet {
+    repeated ProcessInfo processInfo = 1;
+}
+
+message AppWindow {
+    repeated string name = 1;
+}
+
+message GetAppWindowsMapRet {
+    map<int32, AppWindow> pid2WindowMap = 1;
+}
+
+message SysProcessInfo {
+    string name = 1; // 进程名字
+    int32 pid = 2; // 进程id
+}
+
+message GetRunningSysProcessRet {
+    repeated SysProcessInfo processInfo = 1;
+}
+
+message IosEnergyUsageData {
+    int64 time = 1;
+    int64 absTime = 2;
+    int32 cpu = 3;
+    int32 gpu = 4;
+    int32 network = 5;
+    int32 location = 6;
+    int32 display = 7;
+    int32 overhead = 8;
+}
+
+message UpdateAppInfoReq {
+    Device device = 1; // 设备标识
+    AppInfo app = 2; // 需要更新的app
+}
+
+message UpdateAppInfoRet {
+    AppInfo app = 1; // 更新后的app信息
+}
+
+message GetDeviceCacheDataReq {
+    Device device = 1; // 设备标识
+}
+
+message GetDeviceCacheDataPackedReq {
+    Device device = 1; // 设备标识
+    DataInterchangeFormat dataFormat = 2; // 返回的数据格式
+}
+
+message CreateTaskReq {
+    string taskName = 1; // task的名字,不能超过50个字符
+}
+
+message CreateTaskRsp {
+    string taskId = 1; // task的id
+}
+
+message ArchiveCaseToTaskReq {
+    string caseId = 1; // 上传case后返回的case id
+    string taskId = 2; // task的id
+}
+
+message ArchiveCaseToTaskRsp {
+}
+
+message ShareCaseReq {
+    string caseId = 1; // 上传case后返回的case id
+    int32 expireTime = 2; // 多久后分享失效,单位分钟,0代表永不过期
+    bool nonPassword = 3; // 是否设置分享密码
+}
+
+message ShareCaseRsp {
+    string caseUrl = 1; // case的链接
+    string password = 2; // case的密码
+}
+
+message DeviceListRsp {
+    repeated Device devices = 1;
+}
+
+message Preferences {
+    bool doNotInstallPerfDogApp = 1;    //仅适用于android,如果设备上已经安装了PerfDogApp,此选项不生效.如果没安装,为true时不会自动安装.
+}
+
+message SetPreferencesReq {
+    Preferences preferences = 1;
+}
+
+message SetPreferencesRsp {
+}
+
+message GetRenderResolutionReq {
+    Device device = 1;
+}
+
+message GetRenderResolutionRet {
+    int32 width = 1;
+    int32 height = 2;
+}
+
+service PerfDogService {
+    // 通过申请的token登录
+    rpc loginWithToken (Token) returns (UserInfo) {
+    }
+
+    // 获取在线设备列表
+    rpc getDeviceList (Empty) returns (DeviceListRsp) {
+    }
+
+    // 启动设备监听器
+    rpc startDeviceMonitor (Empty) returns (stream DeviceEvent) {
+    }
+
+    // 初始化设备
+    rpc initDevice (Device) returns (Empty) {
+    }
+
+    // 获取设备信息
+    rpc getDeviceInfo (Device) returns (DeviceInfo) {
+    }
+
+    // 获取设备状态
+    rpc getDeviceStatus (Device) returns (DeviceStatus) {
+    }
+
+    // 获取设备APP列表
+    rpc getAppList (Device) returns (AppList) {
+    }
+
+    // 开启数据类型
+    rpc enablePerfDataType (EnablePerfDataTypeReq) returns (Empty) {
+    }
+
+    // 关闭数据类型
+    rpc disablePerfDataType (DisablePerfDataTypeReq) returns (Empty) {
+    }
+
+    // 获取已开启数据类型的列表
+    rpc getPerfDataType (Device) returns (PerfDataTypeRet) {
+    }
+
+    // 获取设备可以开启的数据项
+    rpc getAvailableDataType (Device) returns (PerfDataTypeRet) {
+    }
+
+    // 设置截屏时间间隔
+    rpc setScreenShotInterval (ScreenShotInterval) returns (Empty) {
+    }
+
+    // 兼容旧版本，不建议使用
+    rpc StartTestAppInternal (StartTestAppReq) returns (stream PerfData) {
+    }
+
+    // 兼容旧版本，不建议使用
+    rpc StartTestSysProcessInternal (StartTestSysProcessReq) returns (stream PerfData) {
+
+    }
+
+    // 开始测试
+    // Android默认开启的数据类型有FPS、CPU_USAGE、MEMORY、CPU_TEMPERATURE、NETWORK_USAGE、FRAME_TIME和BATTERY(wifi模式)
+    // iOS默认开启的数据类型有FPS、CPU_USAGE、MEMORY、IOS_GPU_USAGE、NETWORK_USAGE、CTX_SWITCH、FRAME_TIME(usb模式)和BATTERY(wifi模式)
+    // 如果需要开启或者关闭其他数据类型，请使用enablePerfDataType和disablePerfDataType接口
+    rpc startTestApp (StartTestAppReq) returns (StartTestRet) {
+    }
+
+    rpc startTestSysProcess (StartTestSysProcessReq) returns (StartTestRet) {
+    }
+
+    // 获取设备实时的测试数据流
+    rpc openPerfDataStream (OpenPerfDataStreamReq) returns (stream PerfData) {
+    }
+
+    // 结束测试
+    rpc stopTest (StopTestReq) returns (Empty) {
+    }
+
+    // 设置Label
+    rpc setLabel (SetLabelReq) returns (SetLabelRet) {
+    }
+
+    // 修改label的名字
+    rpc updateLabel (UpdateLabelReq) returns (Empty) {
+    }
+
+    // 添加批注
+    rpc addNote (AddNoteReq) returns (Empty) {
+    }
+
+    // 删除批注
+    rpc removeNote (RemoveNoteReq) returns (Empty) {
+    }
+
+    // 设置全局的数据上传服务器,不设置的情况下默认上传到PerfDog云平台
+    rpc setGlobalDataUploadServer (SetDataUploadServerReq) returns (SetDataUploadServerRsp) {
+    }
+
+    // 上传数据(默认上传到PerfDog云平台,可通过setGlobalDataUploadServer接口修改),同时保存到本地Excel文件
+    rpc saveData (SaveDataReq) returns (SaveDataRsp) {
+    }
+
+    // 获取设备的缓存数据,数据按条返回
+    rpc getDeviceCacheData (GetDeviceCacheDataReq) returns (stream CachePerfData) {
+    }
+
+    // 获取设备的缓存数据,数据打包成json或protobuf一次返回
+    rpc getDeviceCacheDataPacked (GetDeviceCacheDataPackedReq) returns (stream CachePerfDataPacked) {
+    }
+
+    // 获取设备上app正在运行的进程列表
+    rpc getAppRunningProcess (GetAppRunningProcessReq) returns (GetAppRunningProcessRet) {
+    }
+
+    // 获取app每个进程id对应的Activity和SurfaceView,仅适用于android
+    rpc getAppWindowsMap (GetAppWindowsMapReq) returns (GetAppWindowsMapRet) {
+    }
+
+    rpc getRunningSysProcess (Device) returns (GetRunningSysProcessRet) {
+    }
+
+    // 刷新app的信息,用于获取完app列表后修改了被测app(例如升级了版本)的情况
+    rpc updateAppInfo (UpdateAppInfoReq) returns (UpdateAppInfoRet) {
+    }
+
+    // web上的创建任务接口
+    rpc createTask (CreateTaskReq) returns (CreateTaskRsp) {
+    }
+
+    // web上的把case归档到task的接口
+    rpc archiveCaseToTask (ArchiveCaseToTaskReq) returns (ArchiveCaseToTaskRsp) {
+    }
+
+    // web上的分享case接口
+    rpc shareCase (ShareCaseReq) returns (ShareCaseRsp) {
+    }
+
+    // 设置运行配置
+    rpc setPreferences (SetPreferencesReq) returns (SetPreferencesRsp) {
+    }
+
+    // 获取测试App的渲染分辨率，仅支持Android
+    rpc GetRenderResolutionOfWindowUnderTest (GetRenderResolutionReq) returns (GetRenderResolutionRet) {
+    }
+
+    // 关闭PerfDogService
+    rpc killServer (Empty) returns (Empty) {
+    }
+}
